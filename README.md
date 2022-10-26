@@ -1,5 +1,11 @@
 # RESTful API for WDB Module Minichallenge
 
+Clone repository:
+```bash
+git clone https://github.com/a-coding-Kat/rest-api.git
+cd rest_api
+```
+
 Create environment:
 ```bash
 python -m venv wdb
