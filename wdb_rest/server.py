@@ -59,6 +59,10 @@ track_fields = {
 }
 
 class Track(Resource):
+    @marshal_with(track_fields)
+    def put(self, track_id):
+        return {}
+
     @marshal_with(track_fields) # serializes objects of the method
     def get(self, track_id):
         track = TrackModel.query.filter_by(id=track_id).first()
@@ -66,6 +70,10 @@ class Track(Resource):
             raise Exception('Cannot get track, track_id does not exist.')
 
         return track
+
+    @marshal_with(track_fields)
+    def post(self, track_id):
+        return {}
 
     def delete(self, track_id):
         track = TrackModel.query.filter_by(id=track_id).first()
@@ -75,11 +83,6 @@ class Track(Resource):
         db.session.commit()
 
         return {'msg': f'Track with track_id = {track_id} is deleted.'}, 204
-
-
-    @marshal_with(track_fields)
-    def put(self, track_id):
-        return {}
 
 
 # Define the type of parameters to pass
