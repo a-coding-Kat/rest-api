@@ -27,4 +27,6 @@ class TrackModel(db.Model):
     duration_ms = db.Column(db.Float, nullable=False)
     time_signature = db.Column(db.Integer, nullable=False)
 
-app.run(debug=True)
+
+if __name__ ==  '__main__':
+    app.run(debug=True)
