@@ -68,8 +68,16 @@ class Track(Resource):
         return track
 
     @marshal_with(track_fields)
-    def post(self, track_id):
-        return {}
+    def patch(self, track_id):
+        track = TrackModel.query.filter_by(id=track_id).first()
+        if not track:
+            raise Exception('Cannot update track, track_id does not exist.')
+
+        args = track_put_args.parse_args()
+        TrackModel.query.filter_by(id=track_id).update(args)
+
+        track = TrackModel.query.filter_by(id=track_id).first()
+        return track
 
     def delete(self, track_id):
         track = TrackModel.query.filter_by(id=track_id).first()
