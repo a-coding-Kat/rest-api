@@ -1,36 +1,36 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_restful import Api, Resource, marshal_with, fields
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 api = Api(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../database.db'
 db = SQLAlchemy(app)
 
 
 class TrackModel(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    track = db.Column(db.String, nullable=False)
-    artist = db.Column(db.String, nullable=False)
-    uri = db.Column(db.String, nullable=False)
-    danceability = db.Column(db.Float, nullable=False)
-    energy = db.Column(db.Float, nullable=False)
-    key = db.Column(db.Integer, nullable=False)
-    loudness = db.Column(db.Float, nullable=False)
-    mode = db.Column(db.Integer, nullable=False)
-    speechiness = db.Column(db.Float, nullable=False)
-    acousticness = db.Column(db.Float, nullable=False)
-    instrumentalness = db.Column(db.Float, nullable=False)
-    liveness = db.Column(db.Float, nullable=False)
-    valence = db.Column(db.Float, nullable=False)
-    tempo = db.Column(db.Float, nullable=False)
-    duration_ms = db.Column(db.Float, nullable=False)
-    time_signature = db.Column(db.Integer, nullable=False)
-    chorus_hit = db.Column(db.Float, nullable=False)
-    sections = db.Column(db.Integer, nullable=False)
-    popularity = db.Column(db.Integer, nullable=False)
-    decade = db.Column(db.String, nullable=False)
+    id = db.Column('id', db.Integer, primary_key=True, autoincrement=True)
+    track = db.Column('track', db.String, nullable=False)
+    artist = db.Column('artist', db.String, nullable=False)
+    uri = db.Column('uri', db.String, nullable=False)
+    danceability = db.Column('danceability', db.Float, nullable=False)
+    energy = db.Column('energy', db.Float, nullable=False)
+    key = db.Column('key', db.Integer, nullable=False)
+    loudness = db.Column('loudness', db.Float, nullable=False)
+    mode = db.Column('mode', db.Integer, nullable=False)
+    speechiness = db.Column('speechiness', db.Float, nullable=False)
+    acousticness = db.Column('acousticness', db.Float, nullable=False)
+    instrumentalness = db.Column('instrumentalness', db.Float, nullable=False)
+    liveness = db.Column('liveness', db.Float, nullable=False)
+    valence = db.Column('valence', db.Float, nullable=False)
+    tempo = db.Column('tempo', db.Float, nullable=False)
+    duration_ms = db.Column('duration_ms', db.Float, nullable=False)
+    time_signature = db.Column('time_signature', db.Integer, nullable=False)
+    chorus_hit = db.Column('chorus_hit', db.Float, nullable=False)
+    sections = db.Column('sections', db.Integer, nullable=False)
+    popularity = db.Column('popularity', db.Integer, nullable=False)
+    decade = db.Column('decade', db.String, nullable=False)
 
 
 # Fields to use for serialization.
@@ -61,7 +61,8 @@ track_fields = {
 class Track(Resource):
     @marshal_with(track_fields) # serializes objects of the method
     def get(self, track_id):
-        return {}
+        result = TrackModel.query.filter_by(id=track_id).first()
+        return result
 
     @marshal_with(track_fields)
     def put(self, track_id):
