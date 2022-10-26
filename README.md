@@ -3,7 +3,7 @@
 Clone repository:
 ```bash
 git clone https://github.com/a-coding-Kat/rest-api.git
-cd rest_api
+cd rest-api
 ```
 
 Create environment:
