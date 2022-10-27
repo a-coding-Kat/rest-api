@@ -1,4 +1,4 @@
-# RESTful API for WDB Module Minichallenge
+# RESTful API, WDB Module Mini-Challenge
 
 Clone repository:
 ```bash
