@@ -66,19 +66,27 @@ class TrackList(Resource):
 
         query = TrackModel.query
 
-        sort_field = request.args.get('sort_filed', type=str, default='id')
+        sort_field = request.args.get('sort_field', type=str, default='id')
         sort_order = request.args.get('sort_order', type=str, default='asc')
 
         # Sort by the user-provided column.
+        if getattr(TrackModel, sort_field, None) is None:
+            raise Exception(f'Provided sort_field {sort_field} does not exist.')
+
         if sort_order == 'asc':
             query = query.order_by(getattr(TrackModel, sort_field))
         elif sort_order == 'desc':
             query = query.order_by(getattr(TrackModel, sort_field).desc())
+        else:
+            raise Exception(f'Provided sort_order {sort_order} is invalid. Use asc or desc.')
 
         filter_field = request.args.get('filter_field', type=str)
         filter_value = request.args.get('filter_value', type=str)
 
         if filter_field is not None and filter_value is not None:
+            if getattr(TrackModel, filter_field, None) is None:
+                raise Exception(f'Provided filter field {filter_field} does not exist.')
+
             if filter_field in ['track', 'artist']:
                 query = query.filter(literal_column(filter_field).like(filter_value))
             else:
