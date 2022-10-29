@@ -20,7 +20,7 @@ class TrackModel(db.Model):
     track = db.Column('track', db.String, nullable=False)
     artist = db.Column('artist', db.String, nullable=False)
     danceability = db.Column('danceability', db.Float, nullable=False)
-    loudness = db.Column('loudness', db.Float, nullable=False)
+    key = db.Column('key', db.Integer, nullable=False)
     instrumentalness = db.Column('instrumentalness', db.Float, nullable=False)
     tempo = db.Column('tempo', db.Float, nullable=False)
     duration_ms = db.Column('duration_ms', db.Float, nullable=False)
@@ -33,7 +33,7 @@ track_fields = {
     'track': fields.String,
     'artist': fields.String,
     'danceability': fields.Float,
-    'loudness': fields.Float,
+    'key': fields.Integer,
     'instrumentalness': fields.Float,
     'tempo': fields.Float,
     'duration_ms': fields.Float,
@@ -46,7 +46,7 @@ track_put_args = reqparse.RequestParser()
 track_put_args.add_argument('track', type=str, help='Name of the track is required.', required=True)
 track_put_args.add_argument('artist', type=str, help='Name of the artist is required.', required=True)
 track_put_args.add_argument('danceability', type=float, help='Danceability is required.', required=True)
-track_put_args.add_argument('loudness', type=float, help='Loudness is required.', required=True)
+track_put_args.add_argument('key', type=int, help='Key is required.', required=True)
 track_put_args.add_argument('instrumentalness', type=float, help='Instrumentalness is required.', required=True)
 track_put_args.add_argument('tempo', type=float, help='Tempo is required.', required=True)
 track_put_args.add_argument('duration_ms', type=float, help='Duration is required.', required=True)
@@ -61,9 +61,11 @@ class TrackList(Resource):
 
     def get(self):
         page = request.args.get('page', 1, type=int)
+        sort = request.args.get('sort', 1, type=str, default='asc')
+        filter = request.args.get('filter', 1, type=str)
         tracks = TrackModel.query.paginate(page=page, per_page=10)
         
-        #iterate instead of returning dictionary at once
+        # Iterate instead of returning dictionary at once.
         pages_nums = []
         for page_num in tracks.iter_pages():
             pages_nums.append(page_num)
@@ -132,7 +134,7 @@ def alltracks():
         page = 1
     r = requests.get(default_url + '/tracks/' + '?page=' + str(page))
     response = r.json()
-    #response["items"] is jsonified in the api call and jsonified here again, maybe this is bad
+    # Response["items"] is jsonified in the api call and jsonified here again, maybe this is bad
     response["items"] = json.loads(response["items"])
     return render_template('tracks.html', pagination=response)
 
