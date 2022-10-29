@@ -112,10 +112,19 @@ class Track(Resource):
     @marshal_with(track_fields)
     def put(self, track_id):
         args = track_put_args.parse_args()
+
         track = TrackModel(**args)
-        # Adding entries permanently to the database.
         db.session.add(track)
-        db.session.flush() # db.session.commit closes session, does not allow to return tracks
+        # Flushing the transaction to get an id.
+        db.session.flush()
+
+        track_id = track.id
+
+        # Commit transaction to create the object.
+        db.session.commit()
+
+        track = TrackModel.query.filter_by(id=track_id).first()
+
         return track, 201
 
     @marshal_with(track_fields) # serializes objects of the method
@@ -125,7 +134,7 @@ class Track(Resource):
         if not track:
             raise Exception('Cannot get track, track_id does not exist.')
 
-        return track
+        return track, 200
 
     @marshal_with(track_fields)
     def patch(self, track_id):
@@ -135,9 +144,10 @@ class Track(Resource):
 
         args = track_put_args.parse_args()
         TrackModel.query.filter_by(id=track_id).update(args)
+        db.session.commit()
 
         track = TrackModel.query.filter_by(id=track_id).first()
-        return track
+        return track, 200
 
     def delete(self, track_id):
         track = TrackModel.query.filter_by(id=track_id).first()
@@ -146,7 +156,7 @@ class Track(Resource):
         db.session.delete(track)
         db.session.commit()
 
-        return {'msg': f'Track with track_id = {track_id} is deleted.'}, 204
+        return {}, 200
 
 
 # Define the type of parameters to pass
