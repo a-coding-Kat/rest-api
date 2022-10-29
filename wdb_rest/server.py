@@ -4,6 +4,8 @@ from flask_restful import Api, Resource, marshal_with, fields, reqparse
 from flask_sqlalchemy import SQLAlchemy
 import os
 import requests
+from sqlalchemy import literal_column
+
 from alchemy_encoder import AlchemyEncoder
 
 app = Flask(__name__)
@@ -61,9 +63,20 @@ class TrackList(Resource):
 
     def get(self):
         page = request.args.get('page', 1, type=int)
-        sort = request.args.get('sort', 1, type=str, default='asc')
-        filter = request.args.get('filter', 1, type=str)
-        tracks = TrackModel.query.paginate(page=page, per_page=10)
+
+        query = TrackModel.query
+
+        sort_field = request.args.get('sort_filed', type=str, default='id')
+        sort_order = request.args.get('sort_order', type=str, default='asc')
+
+        # Sort by the user-provided column.
+        if sort_order == 'asc':
+            query.order_by(getattr(TrackModel, sort_field))
+
+        filter_field = request.args.get('filter_field', type=str)
+        filter_value = request.args.get('filter_value', type=str)
+
+        tracks = TrackModel.query.filter(literal_column(filter_field).like(filter_value)).paginate(page=page, per_page=10)
         
         # Iterate instead of returning dictionary at once.
         pages_nums = []
