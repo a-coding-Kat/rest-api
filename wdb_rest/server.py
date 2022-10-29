@@ -81,6 +81,8 @@ class TrackList(Resource):
         if filter_field is not None and filter_value is not None:
             if filter_field in ['track', 'artist']:
                 query = query.filter(literal_column(filter_field).like(filter_value))
+            else:
+                query = query.filter(getattr(TrackModel, filter_field) == filter_value)
 
         tracks = query.paginate(page=page, per_page=10)
         
