@@ -79,7 +79,8 @@ class TrackList(Resource):
         filter_value = request.args.get('filter_value', type=str)
 
         if filter_field is not None and filter_value is not None:
-            query = query.filter(literal_column(filter_field).like(filter_value))
+            if filter_field in ['track', 'artist']:
+                query = query.filter(literal_column(filter_field).like(filter_value))
 
         tracks = query.paginate(page=page, per_page=10)
         
