@@ -128,4 +128,4 @@ class TrackClient:
         :return: tuple(empty string, HTTP response code)
         """
         r = requests.delete(self.url + 'track/' + str(track_id))
-        return r.text, r.status_code
+        return r.json(), r.status_code
