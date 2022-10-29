@@ -71,12 +71,14 @@ class TrackList(Resource):
 
         # Sort by the user-provided column.
         if sort_order == 'asc':
-            query.order_by(getattr(TrackModel, sort_field))
+            query = query.order_by(getattr(TrackModel, sort_field))
+        elif sort_order == 'desc':
+            query = query.order_by(getattr(TrackModel, sort_field).desc())
 
         filter_field = request.args.get('filter_field', type=str)
         filter_value = request.args.get('filter_value', type=str)
 
-        tracks = TrackModel.query.filter(literal_column(filter_field).like(filter_value)).paginate(page=page, per_page=10)
+        tracks = query.filter(literal_column(filter_field).like(filter_value)).paginate(page=page, per_page=10)
         
         # Iterate instead of returning dictionary at once.
         pages_nums = []
