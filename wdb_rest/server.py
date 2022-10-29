@@ -55,6 +55,7 @@ track_put_args.add_argument('duration_ms', type=float, help='Duration is require
 track_put_args.add_argument('popularity', type=int, help='Popularity is required.', required=True)
 track_put_args.add_argument('decade', type=str, help='Decade is required.', required=True)
 
+
 class TrackList(Resource):
 
     @marshal_with(track_fields)
@@ -105,6 +106,7 @@ class TrackList(Resource):
         
         return package
 
+
 class Track(Resource):
 
     @marshal_with(track_fields)
@@ -151,10 +153,12 @@ class Track(Resource):
 api.add_resource(Track, '/track/<int:track_id>')
 api.add_resource(TrackList, '/tracks/')
 
+
 @app.route('/')
 def index():
     song = Markup("<b>I'm a bolded song!<b>")
     return render_template('index.html', song=song)
+
 
 @app.route('/alltracks/')
 def alltracks():
@@ -167,15 +171,16 @@ def alltracks():
     response["items"] = json.loads(response["items"])
     return render_template('tracks.html', pagination=response)
 
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
+
 # Exception handling
 @app.errorhandler(Exception)
 def handle_exception(e):
-    print(e)
     return {'msg': str(e)}, 500
 
 
