@@ -78,7 +78,10 @@ class TrackList(Resource):
         filter_field = request.args.get('filter_field', type=str)
         filter_value = request.args.get('filter_value', type=str)
 
-        tracks = query.filter(literal_column(filter_field).like(filter_value)).paginate(page=page, per_page=10)
+        if filter_field is not None and filter_value is not None:
+            query = query.filter(literal_column(filter_field).like(filter_value))
+
+        tracks = query.paginate(page=page, per_page=10)
         
         # Iterate instead of returning dictionary at once.
         pages_nums = []
