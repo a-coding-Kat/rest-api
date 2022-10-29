@@ -1,12 +1,18 @@
-from flask import Flask, jsonify
+import json
+from flask import Flask, send_from_directory, Markup, render_template, request
 from flask_restful import Api, Resource, marshal_with, fields, reqparse
 from flask_sqlalchemy import SQLAlchemy
+import os
+import requests
+from alchemy_encoder import AlchemyEncoder
 
 app = Flask(__name__)
 api = Api(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../database.db'
 db = SQLAlchemy(app)
+
+default_url = 'http://127.0.0.1:5000/'
 
 
 class TrackModel(db.Model):
@@ -20,7 +26,6 @@ class TrackModel(db.Model):
     duration_ms = db.Column('duration_ms', db.Float, nullable=False)
     popularity = db.Column('popularity', db.Integer, nullable=False)
     decade = db.Column('decade', db.String, nullable=False)
-
 
 # Fields to use for serialization.
 track_fields = {
@@ -48,8 +53,29 @@ track_put_args.add_argument('duration_ms', type=float, help='Duration is require
 track_put_args.add_argument('popularity', type=int, help='Popularity is required.', required=True)
 track_put_args.add_argument('decade', type=str, help='Decade is required.', required=True)
 
+class TrackList(Resource):
+
+    @marshal_with(track_fields)
+    def get_trackmodel(self, track):
+        return track
+
+    def get(self):
+        page = request.args.get('page', 1, type=int)
+        tracks = TrackModel.query.paginate(page=page, per_page=10)
+        
+        #iterate instead of returning dictionary at once
+        pages_nums = []
+        for page_num in tracks.iter_pages():
+            pages_nums.append(page_num)
+
+        items = json.dumps(tracks.items, cls=AlchemyEncoder)
+        package = dict(page = tracks.page, has_next = tracks.has_next, has_prev = tracks.has_prev, 
+                    tracks_iter = pages_nums, next_num = tracks.next_num, items = items, prev_num = tracks.prev_num)
+        
+        return package
 
 class Track(Resource):
+
     @marshal_with(track_fields)
     def put(self, track_id):
         args = track_put_args.parse_args()
@@ -62,6 +88,7 @@ class Track(Resource):
     @marshal_with(track_fields) # serializes objects of the method
     def get(self, track_id):
         track = TrackModel.query.filter_by(id=track_id).first()
+        
         if not track:
             raise Exception('Cannot get track, track_id does not exist.')
 
@@ -91,7 +118,28 @@ class Track(Resource):
 
 # Define the type of parameters to pass
 api.add_resource(Track, '/track/<int:track_id>')
+api.add_resource(TrackList, '/tracks/')
 
+@app.route('/')
+def index():
+    song = Markup("<b>I'm a bolded song!<b>")
+    return render_template('index.html', song=song)
+
+@app.route('/alltracks/')
+def alltracks():
+    page = request.args.get('page')
+    if page is None:
+        page = 1
+    r = requests.get(default_url + '/tracks/' + '?page=' + str(page))
+    response = r.json()
+    #response["items"] is jsonified in the api call and jsonified here again, maybe this is bad
+    response["items"] = json.loads(response["items"])
+    return render_template('tracks.html', pagination=response)
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 # Exception handling
 @app.errorhandler(Exception)

@@ -1,0 +1,48 @@
+<div class="content">
+    <h2>Page {{ pagination["page"] }}</h2>
+
+    {% for track in pagination["items"] %}
+        <div class="employee">
+            <p><b>#{{ track["id"] }}</b></p>
+            <b>
+                <p class="name">{{ track["track"] }} by {{ track["artist"] }}</p>
+            </b>
+            <p>Danceability: {{ track["danceability"] }}</p>
+            <p>Loudness: {{ track["loudness"] }}</p>
+            <p>Instrumentalness: {{ track["instrumentalness"] }}</p>
+        </div>
+    {% endfor %}
+
+</div>
+
+<div class="pagination">
+    {% if pagination["has_prev"] %}
+        <span>
+            <a class='page-number' href="{{ url_for('alltracks', page=pagination['prev_num']) }}">
+                {{ '<<<' }}
+            </a>
+        </span>
+    {% endif %}
+
+    {% for number in pagination["tracks_iter"] %}
+        {% if pagination["page"] != number %}
+            <span>
+                    <a class='page-number'
+                        href="{{ url_for('alltracks', page=number) }}">
+                    {{ number }}
+                    </a>
+            </span>
+        {% else %}
+            <span class='current-page-number'>{{ number }}</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if pagination["has_next"] %}
+        <span>
+            <a class='page-number'
+                href="{{ url_for('alltracks', page=pagination['next_num']) }}">
+                {{ '>>>' }}
+            </a>
+        </span>
+    {% endif %}
+</div>
