@@ -11,6 +11,16 @@ class TrackClient:
         r = requests.put(self.url + 'track/0', track)
         return r.json(), r.status_code
 
+    # Get a list of tracks.
+    def get_tracks(self, sort_field='id', sort_order='asc', filter_field=None, filter_value=None):
+        params = {'sort_field': sort_field,
+                  'sort_order': sort_order,
+                  'filter_filed': filter_field,
+                  'filter_value': filter_value}
+
+        r = requests.get(self.url + 'tracks/', params=params)
+        return r.json(), r.status_code
+
     def get_track(self, track_id):
         r = requests.get(self.url + 'track/' + str(track_id))
         return r.json(), r.status_code
