@@ -4,20 +4,26 @@ from flask_restful import Api, Resource, marshal_with, fields, reqparse
 from flask_sqlalchemy import SQLAlchemy
 import os
 import requests
-from sqlalchemy import literal_column
 
-from alchemy_encoder import AlchemyEncoder
+from wdb_rest.data import TrackDAO
 
+# Create the application.
 app = Flask(__name__)
+# API(app) instance to indicate that this is a REST API.
 api = Api(app)
 
+# Give SQLite information to SQLAlchemy and link the db instance.
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../database.db'
 db = SQLAlchemy(app)
 
+# Base URL for the endpoints.
 default_url = 'http://127.0.0.1:5000/'
 
 
 class TrackModel(db.Model):
+    """
+
+    """
     id = db.Column('id', db.Integer, primary_key=True, autoincrement=True)
     track = db.Column('track', db.String, nullable=False)
     artist = db.Column('artist', db.String, nullable=False)
@@ -55,6 +61,9 @@ track_put_args.add_argument('duration_ms', type=float, help='Duration is require
 track_put_args.add_argument('popularity', type=int, help='Popularity is required.', required=True)
 track_put_args.add_argument('decade', type=str, help='Decade is required.', required=True)
 
+# Create Track data access object for communicating with the database.
+track_dao = TrackDAO(db, TrackModel)
+
 
 class TrackList(Resource):
 
@@ -65,46 +74,15 @@ class TrackList(Resource):
     def get(self):
         page = request.args.get('page', 1, type=int)
 
-        query = TrackModel.query
-
         sort_field = request.args.get('sort_field', type=str, default='id')
         sort_order = request.args.get('sort_order', type=str, default='asc')
-
-        # Sort by the user-provided column.
-        if getattr(TrackModel, sort_field, None) is None:
-            raise Exception(f'Provided sort_field {sort_field} does not exist.')
-
-        if sort_order == 'asc':
-            query = query.order_by(getattr(TrackModel, sort_field))
-        elif sort_order == 'desc':
-            query = query.order_by(getattr(TrackModel, sort_field).desc())
-        else:
-            raise Exception(f'Provided sort_order {sort_order} is invalid. Use asc or desc.')
 
         filter_field = request.args.get('filter_field', type=str)
         filter_value = request.args.get('filter_value', type=str)
 
-        if filter_field is not None and filter_value is not None:
-            if getattr(TrackModel, filter_field, None) is None:
-                raise Exception(f'Provided filter field {filter_field} does not exist.')
+        result = track_dao.get_tracks_list(filter_field, filter_value, sort_field, sort_order, page)
 
-            if filter_field in ['track', 'artist']:
-                query = query.filter(literal_column(filter_field).like(filter_value))
-            else:
-                query = query.filter(getattr(TrackModel, filter_field) == filter_value)
-
-        tracks = query.paginate(page=page, per_page=10)
-        
-        # Iterate instead of returning dictionary at once.
-        pages_nums = []
-        for page_num in tracks.iter_pages():
-            pages_nums.append(page_num)
-
-        items = json.dumps(tracks.items, cls=AlchemyEncoder)
-        package = dict(page = tracks.page, has_next = tracks.has_next, has_prev = tracks.has_prev, 
-                    tracks_iter = pages_nums, next_num = tracks.next_num, items = items, prev_num = tracks.prev_num)
-        
-        return package
+        return result, 200
 
 
 class Track(Resource):
@@ -112,50 +90,22 @@ class Track(Resource):
     @marshal_with(track_fields)
     def put(self, track_id):
         args = track_put_args.parse_args()
+        result = track_dao.create_track(args)
+        return result, 201
 
-        track = TrackModel(**args)
-        db.session.add(track)
-        # Flushing the transaction to get an id.
-        db.session.flush()
-
-        track_id = track.id
-
-        # Commit transaction to create the object.
-        db.session.commit()
-
-        track = TrackModel.query.filter_by(id=track_id).first()
-
-        return track, 201
-
-    @marshal_with(track_fields) # serializes objects of the method
+    @marshal_with(track_fields)  # serializes objects of the method
     def get(self, track_id):
-        track = TrackModel.query.filter_by(id=track_id).first()
-        
-        if not track:
-            raise Exception('Cannot get track, track_id does not exist.')
-
-        return track, 200
+        result = track_dao.get_track_by_id(track_id)
+        return result, 200
 
     @marshal_with(track_fields)
     def patch(self, track_id):
-        track = TrackModel.query.filter_by(id=track_id).first()
-        if not track:
-            raise Exception('Cannot update track, track_id does not exist.')
-
         args = track_put_args.parse_args()
-        TrackModel.query.filter_by(id=track_id).update(args)
-        db.session.commit()
-
-        track = TrackModel.query.filter_by(id=track_id).first()
-        return track, 200
+        result = track_dao.update_track_by_id(track_id, args)
+        return result, 200
 
     def delete(self, track_id):
-        track = TrackModel.query.filter_by(id=track_id).first()
-        if not track:
-            raise Exception(f'Cannot delete track, track_id = {track_id} does not exist.')
-        db.session.delete(track)
-        db.session.commit()
-
+        track_dao.delete_track_by_id(track_id)
         return {}, 200
 
 
@@ -194,5 +144,5 @@ def handle_exception(e):
     return {'msg': str(e)}, 500
 
 
-if __name__ ==  '__main__':
+if __name__ == '__main__':
     app.run(debug=True)
