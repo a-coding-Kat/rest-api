@@ -1,6 +1,6 @@
 import requests
 
-# If no URL provided to the client, try to connect to local instance.
+# If no URL is provided to the client, try to connect to local instance.
 default_url = 'http://127.0.0.1:5000/'
 
 
@@ -63,7 +63,7 @@ class TrackClient:
         Numeric fields: danceability, key, instrumentalness, tempo, duration_ms, popularity
 
         You can search on string fields using %like% search. Example: %Happy% will match all tracks that contain "Happy".
-        For numerical fields, the match is always exact to the sepcified number.
+        For numerical fields, the match is always exact to the specified number.
 
         Example:
             client.get_tracks(filter_field='track', filter_value='Beat%',
