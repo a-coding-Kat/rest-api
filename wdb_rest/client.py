@@ -50,7 +50,7 @@ class TrackClient:
         :return: tuple(dict of created object, HTTP response code)
         """
         # Passed id=0 is ignored.
-        r = requests.put(self.url + 'track/0', track)
+        r = requests.put(self.url + 'track/0', json=track)
         return r.json(), r.status_code
 
     def get_tracks(self, sort_field='id', sort_order='asc', filter_field=None, filter_value=None):
@@ -114,7 +114,7 @@ class TrackClient:
         :param dict track: Dictionary with fields to update an existing track.
         :return: tuple(dict of created object, HTTP response code)
         """
-        r = requests.patch(self.url + 'track/' + str(track['id']), track)
+        r = requests.patch(self.url + 'track/' + str(track['id']), json=track)
         return r.json(), r.status_code
 
     def delete_track(self, track_id):
