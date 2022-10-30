@@ -22,7 +22,7 @@ default_url = 'http://127.0.0.1:5000/'
 
 class TrackModel(db.Model):
     """
-
+    Sets up a database model representing the track table we’ll use to store our track data.
     """
     id = db.Column('id', db.Integer, primary_key=True, autoincrement=True)
     track = db.Column('track', db.String, nullable=False)
