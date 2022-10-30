@@ -1,7 +1,7 @@
 import pandas as pd
 import sqlite3
 
-# Connect to database.
+# Connect to the database.
 conn = sqlite3.connect('database.db')
 
 # Create table needed for import from Pandas dataframe.
