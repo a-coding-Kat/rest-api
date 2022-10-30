@@ -137,6 +137,12 @@ The TrackList endpoint can filter and sort based on the fields in the track_mode
 of the results. For string fields it allows for **like** matching: searching for artist "%Lana%" returns all artist 
 that have "Lana" somewhere in their name. For numeric fields it allows for exact matching only.
 
+## wdb_rest/data.py
+
+Data access object that communicates with the database and implements all the data operations needed by server.py.
+With this file we separate the API definition (in server.py) and the database access code (in data.py), making it 
+easier to change the data storage if needed.
+
 ## wdb_rest/client.py
 
 To communicate with the server you can use the provided Python client. It uses the **requests** module  for 
