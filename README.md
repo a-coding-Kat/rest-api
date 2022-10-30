@@ -12,13 +12,29 @@ the root of this project you can generate a sqlite3 database file that is later 
 
 This project requires Python 3.6 or higher.
 
-## Running the server
-
 Clone repository:
 ```bash
 git clone https://github.com/a-coding-Kat/rest-api.git
 cd rest-api
 ```
+
+## Running the server in Docker
+
+To build and run the container execute from the root of this project:
+```bash
+sh build_docker.sh
+sh run_docker.sh
+```
+
+Alternatively, if you do not have bash, you can execute the build and run command manually:
+```bash
+docker build -t wdb_rest .
+docker run -it -p 5000:5000 wdb_rest
+```
+
+The web service will be accessible on the URL **http://127.0.0.1:5000**.
+
+## Running the server manually
 
 Create environment:
 ```bash
