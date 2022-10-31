@@ -5,6 +5,7 @@ from scipy.spatial import distance
 import pandas as pd
 
 from sqlalchemy import literal_column
+from sqlalchemy.orm import load_only
 
 from wdb_rest.json_encoders import AlchemyEncoder, NumpyArrayEncoder
 
@@ -95,8 +96,8 @@ class TrackDAO:
         :return: query of n recommendations 
         """
         track_array = recommendation_matrix[track_id]
-        recommendation_indeces = DataHelpers.get_sorted_recommendation_indeces(track_array, recommendation_matrix)
-        recommendations = self.track_model.query.filter(self.track_model.id.in_(recommendation_indeces[0][0:how_many_recommendations-1].tolist())).all()
+        recommendation_indeces = self.get_sorted_recommendation_indeces(track_array, recommendation_matrix)
+        recommendations = self.track_model.query.filter(self.track_model.id.in_(recommendation_indeces[0][0:how_many_recommendations].tolist())).all()
         return recommendations
 
     def create_track(self, args):
@@ -204,9 +205,7 @@ class TrackDAO:
         self.db.session.delete(track)
         self.db.session.commit()
 
-class DataHelpers():
-
-    def set_recommendation_matrix(path, columns_to_be_vectorized):
+    def set_recommendation_matrix(self, path, columns_to_be_vectorized):
         """Get all songs from DB and save them as a numpy file (recommendation_matrix.npy) 
         if it doesn't exist already
 
@@ -217,20 +216,20 @@ class DataHelpers():
 
         if os.path.exists(path) is False:
 
-            df = pd.DataFrame(columns = columns_to_vec)
+            df = pd.DataFrame(columns = columns_to_be_vectorized)
 
             print("Calculating recommendation matrix...")
-            alltracks = TrackModel.query.options(load_only(*columns_to_be_vectorized)).all()
+            alltracks = self.track_model.query.options(load_only(*columns_to_be_vectorized)).all()
             #recommendation_matrix = np.empty((0, len(columns_to_be_vectorized)))
             for track in alltracks:
-                track = track_to_vec(track, columns_to_be_vectorized)
+                track = self.track_to_vec(track, columns_to_be_vectorized)
                 df = pd.concat([df, track], axis=0, join='outer')
 
                 #recommendation_matrix = np.append(recommendation_matrix, [track_array], axis = 0)
             
-            df["decade_vec"] = df["decade_vec"].astype('category').cat.codes
+            df["decade"] = df["decade"].astype('category').cat.codes
 
-            df[columns_vectoried] = (df[columns_vectoried]-df[columns_vectoried].mean())/df[columns_vectoried].std()
+            df[columns_to_be_vectorized] = (df[columns_to_be_vectorized]-df[columns_to_be_vectorized].mean())/df[columns_to_be_vectorized].std()
 
             recommendation_matrix = df.to_numpy()
             np.save(path, recommendation_matrix)
@@ -239,7 +238,7 @@ class DataHelpers():
         else:
             return np.load(path)
 
-    def track_to_vec(track, columns_to_be_vectorized):
+    def track_to_vec(self, track, columns_to_be_vectorized):
         """Transforms track from DB to a dataframe
 
         :param track: track to be transformed
@@ -247,12 +246,12 @@ class DataHelpers():
         :return: transformed track
         """
 
-        df = pd.DataFrame(columns = columns_to_be_vec)
+        df = pd.DataFrame(columns = columns_to_be_vectorized)
         for i in columns_to_be_vectorized:
             df[i] = track.__dict__[i]
         return df
 
-    def get_sorted_recommendation_indeces(A, B):
+    def get_sorted_recommendation_indeces(self, A, B):
         """Get sorted recommendations based on cosine similarity
         
         :param A: vector to get recommendations for

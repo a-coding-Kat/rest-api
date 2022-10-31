@@ -58,7 +58,7 @@ python wdb_rest/server.py
 
 The server comes with Unit tests you can run. From the root folder of this project:
 ```bash
-python -m unittest test.py
+python -m unittest test_api.py
 ```
 
 ## Using the client

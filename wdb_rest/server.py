@@ -1,45 +1,31 @@
 import json
+import sys
 from flask import Flask, send_from_directory, Markup, render_template, request, g
 from flask_restful import Api, Resource, marshal_with, fields, reqparse
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import load_only
 import os
 import requests
 
-from wdb_rest.data import TrackDAO, DataHelpers
+from wdb_rest.data import TrackDAO
 
 # Create the application.
+global app
 app = Flask(__name__)
+
 # API(app) instance to indicate that this is a REST API.
+global api
 api = Api(app)
 
-# Give SQLite information to SQLAlchemy and link the db instance.
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../database.db'
 app.config["columns_to_be_vectorized"] = ["danceability", "energy", "key", "loudness", "mode", "speechiness",
             "acousticness", "instrumentalness", "liveness", "valence", "tempo", "duration_ms",
             "time_signature", "chorus_hit", "sections", "popularity", "decade"]
 app.config["recommendation_matrix"] = None
 app.config["recommendation_matrix_path"] = "./recommendation_matrix.npy"
 
-db = SQLAlchemy(app)
+global track_dao
 
 # Base URL for the endpoints.
 default_url = 'http://127.0.0.1:5000/'
-
-class TrackModel(db.Model):
-    """
-    Sets up a database model representing the track table we’ll use to store our track data.
-    """
-    id = db.Column('id', db.Integer, primary_key=True, autoincrement=True)
-    track = db.Column('track', db.String, nullable=False)
-    artist = db.Column('artist', db.String, nullable=False)
-    danceability = db.Column('danceability', db.Float, nullable=False)
-    key = db.Column('key', db.Integer, nullable=False)
-    instrumentalness = db.Column('instrumentalness', db.Float, nullable=False)
-    tempo = db.Column('tempo', db.Float, nullable=False)
-    duration_ms = db.Column('duration_ms', db.Float, nullable=False)
-    popularity = db.Column('popularity', db.Integer, nullable=False)
-    decade = db.Column('decade', db.String, nullable=False)
 
 # Fields to use for serialization.
 track_fields = {
@@ -67,10 +53,6 @@ track_put_args.add_argument('duration_ms', type=float, help='Duration is require
 track_put_args.add_argument('popularity', type=int, help='Popularity is required.', required=True)
 track_put_args.add_argument('decade', type=str, help='Decade is required.', required=True)
 
-# Create Track data access object for communicating with the database.
-track_dao = TrackDAO(db, TrackModel)
-
-
 class TrackList(Resource):
 
     @marshal_with(track_fields)
@@ -95,7 +77,7 @@ class Recommender(Resource):
 
     def __init__(self):
         if app.config["recommendation_matrix"] is None:
-            app.config["recommendation_matrix"] = DataHelpers.set_recommendation_matrix(app.config["recommendation_matrix_path"], app.config["columns_to_be_vectorized"])
+            app.config["recommendation_matrix"] = track_dao.set_recommendation_matrix(app.config["recommendation_matrix_path"], app.config["columns_to_be_vectorized"])
 
     @marshal_with(track_fields)
     def get(self, track_id, how_many_recommendations):
@@ -125,12 +107,10 @@ class Track(Resource):
         track_dao.delete_track_by_id(track_id)
         return {}, 200
 
-
 # Define the type of parameters to pass
 api.add_resource(Track, '/api/track/<int:track_id>')
 api.add_resource(TrackList, '/api/tracks/')
 api.add_resource(Recommender, '/api/recommendation/<int:track_id>/<int:how_many_recommendations>')
-
 
 @app.route('/')
 def index():
@@ -168,5 +148,61 @@ def favicon():
 def handle_exception(e):
     return {'msg': str(e)}, 500
 
+def instantiate_db_connection(app, database_uri):
+    global track_dao
+    # Give SQLite information to SQLAlchemy and link the db instance.
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+
+    db = SQLAlchemy(app)
+
+    class TrackModel(db.Model):
+        """
+        Sets up a database model representing the track table we’ll use to store our track data.
+        """
+        id = db.Column('id', db.Integer, primary_key=True, autoincrement=True)
+        track = db.Column('track', db.String, nullable=False)
+        artist = db.Column('artist', db.String, nullable=False)
+        danceability = db.Column('danceability', db.Float, nullable=False)
+        key = db.Column('key', db.Integer, nullable=False)
+        instrumentalness = db.Column('instrumentalness', db.Float, nullable=False)
+        tempo = db.Column('tempo', db.Float, nullable=False)
+        duration_ms = db.Column('duration_ms', db.Float, nullable=False)
+        popularity = db.Column('popularity', db.Integer, nullable=False)
+        decade = db.Column('decade', db.String, nullable=False)
+
+    # Create Track data access object for communicating with the database.
+    track_dao = TrackDAO(db, TrackModel)
+
+    return app
+
+def app_run(database_type, debug):
+    global app
+
+    if database_type == "test":
+        database_uri = 'sqlite:///../database-test.db'
+        print("Connecting to test database")
+        print("---------------------------")
+    else:
+        database_uri = 'sqlite:///../database.db'
+        print("Connecting to production database")
+        print("---------------------------------")
+
+    app = instantiate_db_connection(app, database_uri)
+
+    print("Done.")
+
+    return app.run(debug=debug, host='0.0.0.0') # To enable docker access
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0') # To enable docker access
+    
+    try:
+        database_type = sys.argv[1]
+    except:
+        database_type = "prod"
+    try:
+        debug = (sys.argv[2] == "True")
+    except:
+        debug = True
+
+    app_run(database_type, debug)
+
