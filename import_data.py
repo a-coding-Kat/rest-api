@@ -1,6 +1,3 @@
-from time import time
-
-
 import pandas as pd
 import sqlite3
 
