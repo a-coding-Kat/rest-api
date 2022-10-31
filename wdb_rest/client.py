@@ -75,7 +75,7 @@ class TrackClient:
         :param str filter_value: Value to filter on. Supported %like% search for string fields.
         :return: tuple(dict of pagination attributes, HTTP response code)
                  pagination attributes: page:int, has_next:bool, has_prev:bool, 
-                                        tracks_iter:list(int), next_num:int, items:json (list of items for current page), 
+                                        tracks_iter:list(int), next_num:int, items:str (list of items that needs to be jsonified), 
                                         prev_num=int
         """
         # Prepare parameters for sending to the API.
