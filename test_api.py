@@ -1,5 +1,4 @@
 import json
-from cmath import e
 import unittest
 from wdb_rest.client import TrackClient
 
