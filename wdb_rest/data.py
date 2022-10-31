@@ -38,12 +38,14 @@ class TrackDAO:
             track_dao.get_tracks_list(filter_field='track', filter_value='Beat%',
                                       sort_field='danceability', sort_order='desc')
 
-        :param str filter_field: Field to filter by. No filter by default.
-        :param str filter_value: Value to filter on. Supported %like% search for string fields.
         :param str sort_field: Field to sort by. Default value: 'id'
         :param str sort_order: Ascending or descending order. Valid values: 'asc', 'desc'. Default value: 'asc'
-
-        :return: TODO: Describe the return object.
+        :param str filter_field: Field to filter by. No filter by default.
+        :param str filter_value: Value to filter on. Supported %like% search for string fields.
+        :return: tuple(dict of pagination attributes, HTTP response code)
+                 pagination attributes: page:int, has_next:bool, has_prev:bool, 
+                                        tracks_iter:list(int), next_num:int, items:json (list of items for current page), 
+                                        prev_num=int
         """
 
         # Create query object for track_model.
@@ -83,17 +85,19 @@ class TrackDAO:
 
         # Create response object.
         items = json.dumps(tracks.items, cls=AlchemyEncoder)
-        package = dict(page=tracks.page, has_next=tracks.has_next, has_prev=tracks.has_prev,
+        return dict(page=tracks.page, has_next=tracks.has_next, has_prev=tracks.has_prev,
                        tracks_iter=pages_nums, next_num=tracks.next_num, items=items, prev_num=tracks.prev_num)
 
-        return package
-
     def get_track_recommendations(self, track_id, how_many_recommendations, recommendation_matrix):
-        """Returns recommendations for a track
-        
-        :param track_id: id of the track to be recommended
-        :param how_many_recommendations: how many recommendations are returned in the payload (max 100, min 1)
-        :return: query of n recommendations 
+        """
+        Recommend me n tracks similar to my track based on id.
+
+        Example:
+            client.recommend_track(25, 10)
+
+        :param int track_id: id of the track to delete.
+        :paran np.array recommendation_matrix: matrix of track information used for recommendation
+        :param int how_many_recommendations: how many recommendations for the track
         """
 
         try:
