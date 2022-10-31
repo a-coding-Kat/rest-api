@@ -1,0 +1,26 @@
+
+
+<form method="post">
+    <p>Weights (not implemented yet) <br>
+        <input type="checkbox" name="danceability" id="danceability" value="{{ request.form['danceability'] }}"> danceability </input><br>
+        <input type="checkbox" name="energy" id="energy" value="{{ request.form['energy'] }}"> energy </input><br>
+        <input type="checkbox" name="key" id="key" value="{{ request.form['key'] }}"> key </input><br>
+        <input type="checkbox" name="loudness" id="loudness" value="{{ request.form['loudness'] }}"> loudness </input><br>
+        <input type="checkbox" name="mode" id="mode" value="{{ request.form['mode'] }}"> mode </input><br>
+        <input type="checkbox" name="acousticness" id="acousticness" value="{{ request.form['acousticness'] }}"> acousticness </input><br>
+        <input type="checkbox" name="instrumentalness" id="instrumentalness" value="{{ request.form['instrumentalness'] }}"> instrumentalness </input><br>
+        <input type="checkbox" name="liveness" id="liveness" value="{{ request.form['liveness'] }}"> liveness </input><br>
+        <input type="checkbox" name="valence" id="valence" value="{{ request.form['valence'] }}"> valence </input><br>
+        <input type="checkbox" name="tempo" id="tempo" value="{{ request.form['tempo'] }}"> tempo </input><br>
+        <input type="checkbox" name="duration_ms" id="duration_ms" value="{{ request.form['duration_ms'] }}"> duration_ms </input><br>
+        <input type="checkbox" name="time_signature" id="time_signature" value="{{ request.form['time_signature'] }}"> time_signature </input><br>
+        <input type="checkbox" name="chorus_hit" id="chorus_hit" value="{{ request.form['chorus_hit'] }}"> chorus_hit </input><br>
+        <input type="checkbox" name="sections" id="sections" value="{{ request.form['sections'] }}"> sections </input><br>
+        <input type="checkbox" name="popularity" id="popularity" value="{{ request.form['popularity'] }}"> popularity </input><br>
+        <input type="checkbox" name="decade" id="decade" value="{{ request.form['decade'] }}"> decade </input><br>
+    </p>
+
+    <label for="track_id">Enter Track Id:</label>
+    <input type="track_id" id="track_id" name="track_id">
+    <p><input type="submit"></p>
+</form>

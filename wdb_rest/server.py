@@ -1,11 +1,12 @@
 import json
-from flask import Flask, send_from_directory, Markup, render_template, request
+from flask import Flask, send_from_directory, Markup, render_template, request, g
 from flask_restful import Api, Resource, marshal_with, fields, reqparse
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import load_only
 import os
 import requests
 
-from wdb_rest.data import TrackDAO
+from data import TrackDAO, DataHelpers
 
 # Create the application.
 app = Flask(__name__)
@@ -14,11 +15,16 @@ api = Api(app)
 
 # Give SQLite information to SQLAlchemy and link the db instance.
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../database.db'
+app.config["columns_to_be_vectorized"] = ["danceability", "energy", "key", "loudness", "mode", "speechiness",
+            "acousticness", "instrumentalness", "liveness", "valence", "tempo", "duration_ms",
+            "time_signature", "chorus_hit", "sections", "popularity", "decade"]
+app.config["recommendation_matrix"] = None
+app.config["recommendation_matrix_path"] = "./recommendation_matrix.npy"
+
 db = SQLAlchemy(app)
 
 # Base URL for the endpoints.
 default_url = 'http://127.0.0.1:5000/'
-
 
 class TrackModel(db.Model):
     """
@@ -34,6 +40,23 @@ class TrackModel(db.Model):
     duration_ms = db.Column('duration_ms', db.Float, nullable=False)
     popularity = db.Column('popularity', db.Integer, nullable=False)
     decade = db.Column('decade', db.String, nullable=False)
+    danceability_vec = db.Column('danceability_vec', db.Float, nullable=False)
+    energy_vec = db.Column('energy_vec', db.Float, nullable=False)
+    key_vec = db.Column('key_vec', db.Float, nullable=False)
+    loudness_vec = db.Column('loudness_vec', db.Float, nullable=False)
+    mode_vec = db.Column('mode_vec', db.Float, nullable=False)
+    speechiness_vec = db.Column('speechiness_vec', db.Float, nullable=False)
+    acousticness_vec = db.Column('acousticness_vec', db.Float, nullable=False)
+    instrumentalness_vec = db.Column('instrumentalness_vec', db.Float, nullable=False)
+    liveness_vec = db.Column('liveness_vec', db.Float, nullable=False)
+    valence_vec = db.Column('valence_vec', db.Float, nullable=False)
+    tempo_vec = db.Column('tempo_vec', db.Float, nullable=False)
+    duration_ms_vec = db.Column('duration_ms_vec', db.Float, nullable=False)
+    time_signature_vec = db.Column('time_signature_vec', db.Float, nullable=False)
+    chorus_hit_vec = db.Column('chorus_hit_vec', db.Float, nullable=False)
+    sections_vec = db.Column('sections_vec', db.Float, nullable=False)
+    popularity_vec = db.Column('popularity_vec', db.Float, nullable=False)
+    decade_vec = db.Column('decade_vec', db.Float, nullable=False)
 
 # Fields to use for serialization.
 track_fields = {
@@ -85,6 +108,17 @@ class TrackList(Resource):
         return result, 200
 
 
+class Recommender(Resource):
+
+    def __init__(self):
+        if app.config["recommendation_matrix"] is None:
+            app.config["recommendation_matrix"] = DataHelpers.set_recommendation_matrix(app.config["recommendation_matrix_path"], app.config["columns_to_be_vectorized"])
+
+    @marshal_with(track_fields)
+    def get(self, track_id, how_many_recommendations):
+        result = track_dao.get_track_recommendations(track_id, how_many_recommendations, app.config["recommendation_matrix"])
+        return result, 200
+
 class Track(Resource):
 
     @marshal_with(track_fields)
@@ -110,8 +144,9 @@ class Track(Resource):
 
 
 # Define the type of parameters to pass
-api.add_resource(Track, '/track/<int:track_id>')
-api.add_resource(TrackList, '/tracks/')
+api.add_resource(Track, '/api/track/<int:track_id>')
+api.add_resource(TrackList, '/api/tracks/')
+api.add_resource(Recommender, '/api/recommendation/<int:track_id>/<int:how_many_recommendations>')
 
 
 @app.route('/')
@@ -125,24 +160,30 @@ def alltracks():
     page = request.args.get('page')
     if page is None:
         page = 1
-    r = requests.get(default_url + '/tracks/' + '?page=' + str(page))
+    r = requests.get(default_url + 'api/tracks/' + '?page=' + str(page))
     response = r.json()
     # Response["items"] is jsonified in the api call and jsonified here again, maybe this is bad
     response["items"] = json.loads(response["items"])
     return render_template('tracks.html', pagination=response)
 
+@app.route('/recommendation/', methods=["GET", "POST"])
+def recommend_form():
+    if request.method == 'POST':
+        title = request.form
+        r = requests.get(default_url + 'api/recommendation/' + str(title["track_id"]) + "/10")
+        response = r.json()
+        return response
+    return render_template('recommendation.html')
 
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-
 # Exception handling
 @app.errorhandler(Exception)
 def handle_exception(e):
     return {'msg': str(e)}, 500
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0') # To enable docker access

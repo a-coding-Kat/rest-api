@@ -1,7 +1,16 @@
+from time import time
+
+
 import pandas as pd
 import sqlite3
 
 # Connect to the database.
+# Create pandas df.
+df = pd.read_csv('data/spotify_dataset.csv')
+df = df.reset_index()
+df = df.rename(columns={'index': 'id'})
+
+# Connect to database.
 conn = sqlite3.connect('database.db')
 
 # Create table needed for import from Pandas dataframe.
