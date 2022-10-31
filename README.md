@@ -58,6 +58,7 @@ python wdb_rest/server.py
 
 Before running the tests you must initialize the database by running import_data.py.
 The tests will modify the database. Rerun import_data.py before starting the server.
+To use the tests on a test database, the database connection string in server.py needs to be adjusted to go to "database-test.db" instead of database.db. When starting the server, the test database will then be used. We tried to implement an automatic connection to the test database while testing, but this didn't work and it is on the TODO-list.
 
 ### Unit tests
 
