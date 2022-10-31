@@ -130,7 +130,7 @@ class TrackClient:
         r = requests.delete(self.url + 'track/' + str(track_id))
         return r.json(), r.status_code
 
-    def recommend_track(self, track_id, how_many_recommendations):
+    def recommend_tracks(self, track_id, how_many_recommendations):
         """
         Recommend me n tracks similar to my track based on id.
 
@@ -143,5 +143,5 @@ class TrackClient:
 
         params = {'how_many_recommendations': how_many_recommendations}
 
-        r = requests.delete(self.url + 'recommendation/' + str(track_id), params)
+        r = requests.get(self.url + 'recommendation/' + str(track_id), params)
         return r.json(), r.status_code
