@@ -84,7 +84,7 @@ Import and initialize the client:
 from wdb_rest.client import TrackClient
 
 # Change the URL to the address you are running this server on.
-url = "http://127.0.0.1:5000"
+url = "http://127.0.0.1:5000/api/"
 
 client = TrackClient(url)
 ```
