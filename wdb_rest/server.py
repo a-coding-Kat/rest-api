@@ -14,9 +14,8 @@ api = Api(app)
 
 # Give SQLite information to SQLAlchemy and link the db instance.
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../database.db'
-app.config["columns_to_be_vectorized"] = ["danceability", "energy", "key", "loudness", "mode", "speechiness",
-            "acousticness", "instrumentalness", "liveness", "valence", "tempo", "duration_ms",
-            "time_signature", "chorus_hit", "sections", "popularity", "decade"]
+app.config["columns_to_be_vectorized"] = ["danceability", "key", "instrumentalness", "tempo", "duration_ms",
+            "popularity", "decade"]
 app.config["recommendation_matrix"] = None
 app.config["recommendation_matrix_path"] = "./recommendation_matrix.npy"
 
@@ -100,9 +99,21 @@ class Recommender(Resource):
             )
 
     @marshal_with(track_fields)
-    def get(self, track_id, how_many_recommendations):
-        result = track_dao.get_track_recommendations(track_id, how_many_recommendations, app.config["recommendation_matrix"])
+    def get(self, track_id):
+
+        try:
+            how_many_recommendations = request.args.get('how_many_recommendations', 1, type=int)
+            if how_many_recommendations > 100:
+                how_many_recommendations = 100
+            if how_many_recommendations < 1:
+                how_many_recommendations = 1
+        except:
+            how_many_recommendations = 10
+
+        result = track_dao.get_track_recommendations(track_id, how_many_recommendations,
+                                                     app.config["recommendation_matrix"])
         return result, 200
+
 
 class Track(Resource):
 
@@ -131,7 +142,7 @@ class Track(Resource):
 # Define the type of parameters to pass
 api.add_resource(Track, '/api/track/<int:track_id>')
 api.add_resource(TrackList, '/api/tracks/')
-api.add_resource(Recommender, '/api/recommendation/<int:track_id>/<int:how_many_recommendations>')
+api.add_resource(Recommender, '/api/recommendation/<int:track_id>/')
 
 
 @app.route('/')
