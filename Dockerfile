@@ -20,7 +20,7 @@ RUN python import_data.py
 ENTRYPOINT [ "python" ]
 
 # Our server is the default module.
-CMD [ "wdb_rest/server.py" , "(database_type)", "(debug)"]
+CMD [ "wdb_rest/server.py" ]
 
 # Expose port 5000 to other containers.
 EXPOSE 5000
