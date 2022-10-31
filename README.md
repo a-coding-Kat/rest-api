@@ -326,7 +326,7 @@ The REST API offers 3 endpoints for accessing individual tracks and a list of tr
         [
             {
                 "id":3,
-                "track":"Melody Twist"
+                "track":"Melody Twist",
                 "artist":"Lord Melody",
                 "danceability":0.657,
                 "decade":"60s",
@@ -334,18 +334,18 @@ The REST API offers 3 endpoints for accessing individual tracks and a list of tr
                 "instrumentalness":4.42e-06,
                 "key":5,
                 "popularity":0,
-                "tempo":115.94,
+                "tempo":115.94
             },
             {
                 "id":1647,
-                "track":"Who Is Gonna Love Me?"
+                "track":"Who Is Gonna Love Me?",
                 "artist":"Dionne Warwick",
                 "danceability":0.353,
                 "decade":"60s",
                 "duration_ms":192573.0,
                 "instrumentalness":0.0,
                 "key":0,"popularity":1,
-                "tempo":94.655,
+                "tempo":94.655
             }
         ]
         ```
