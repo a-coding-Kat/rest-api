@@ -102,7 +102,7 @@ Available methods and which endpoints they access:
 More details on these methods are available in the form of doc strings in the client itself.
 
 All methods return a tuple in the format: (**server\_response\_json**, **HTTP return code**). For more information 
-on the return JSON and method parameters see the **Rest API** chapter in this document.
+on the return JSON and method parameters see the **REST API** chapter in this document.
 
 # Project dependencies
 
@@ -116,7 +116,7 @@ The following libraries need to be installed on the machine:
 
 All requirements are added to the **requirements.txt** file.
 
-# Rest API
+# REST API
 
 The REST API offers 3 endpoints for accessing individual tracks and a list of tracks (based on the selection criteria).
 * **TrackList endpoint** `/api/tracks/`: Get a list of songs based on some criteria
@@ -156,7 +156,7 @@ The REST API offers 3 endpoints for accessing individual tracks and a list of tr
         }
         ```
 
-* **Track endpoint** `/api/track/<int:track_id>`: CURD access to Track records in database.
+* **Track endpoint** `/api/track/<int:track_id>`: CRUD access to Track records in database.
     - **GET** `/api/track/<int:track_id>` - retrieve single Track by id.
 
         Get returns you the requested Track if successful and a message telling you what is wrong otherwise.
@@ -297,7 +297,64 @@ The REST API offers 3 endpoints for accessing individual tracks and a list of tr
           "msg": "Cannot delete track, track_id = 1 does not exist."
         }
         ```
+
+* **Track endpoint** `/api/recommendation/<int:track_id>/<int:how_many_recommendations>`: Get a list of recommendations for a song.
+    - **GET** `/api/track/<int:track_id>/<int:how_many_recommendations>'` - Return a selected list of recommendations based on a song.
+
+        Get returns you a list of tracks similar to a track based on its ID. The similarity is calculated using cosine similarity and uses the following track attributes for recommendation:
         
+        - danceability
+        - key
+        - instrumentalness
+        - tempo
+        - duration_ms
+        - popularity
+        - decade
+
+        This endpoint supports the following parameters:
+        how_many_recommendations (default = 10) - How many recommendations should the api return. Minimum is 1, maximum is 100.
+        
+        In a further step, there will be the possibility to retrieve recommendations by weighing the attributes above differently. For example [10, 1, 1, 1, 1, 1, 1] would mean recommending songs mostly based on their "danceability" similarity. 
+    
+        Example:
+        ```bash
+        # Retrieve recommendations for track with id=1
+        curl -s -X GET http://localhost:5000/api/recommendation/1/?how_many_recommendations=10
+        ```
+        Positive response (HTTP code 200):
+        ```json
+        [
+            {
+                "id":3,
+                "track":"Melody Twist"
+                "artist":"Lord Melody",
+                "danceability":0.657,
+                "decade":"60s",
+                "duration_ms":223960.0,
+                "instrumentalness":4.42e-06,
+                "key":5,
+                "popularity":0,
+                "tempo":115.94,
+            },
+            {
+                "id":1647,
+                "track":"Who Is Gonna Love Me?"
+                "artist":"Dionne Warwick",
+                "danceability":0.353,
+                "decade":"60s",
+                "duration_ms":192573.0,
+                "instrumentalness":0.0,
+                "key":0,"popularity":1,
+                "tempo":94.655,
+            }
+        ]
+        ```
+        Negative response (HTTP code 500):
+        ```json
+        {
+          "msg": "Invalid track id or track not found."
+        }
+        ```
 
 # Project architecture
 
@@ -328,7 +385,7 @@ Table columns:
 | decade           | TEXT      | Decade in which the track was created.                                    |
 
 After the table has been created, the script reads the CSV file with the Spotify data (stored in **data/spotify\_dataset.csv**) 
-into a **Pandas Dataframe**. The Dataframe allows for exporting its content into a database with the function **to\_sql**.
+into a **Pandas Dataframe**. The Dataframe allows for exporting its content into a database with the function **to\_sql**. A copy of the database is created for testing. It holds the same but with the suffix "-test". 
 
 ## wdb_rest/server.py
 

@@ -16,6 +16,13 @@ class SignupTest(unittest.TestCase):
         self.assertEqual(str, type(track['artist']))
         self.assertEqual(200, status_code)
 
+    def test_get_recommendations(self):
+
+        recommendations, status_code = self.client.recommend_tracks(42, 12)
+        self.assertEqual(list, type(recommendations))
+        self.assertEqual(12, len(recommendations))
+        self.assertEqual(200, status_code)
+
     def tearDown(self):
         # Delete Database collections after the test is complete
         pass
