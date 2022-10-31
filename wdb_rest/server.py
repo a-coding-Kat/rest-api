@@ -40,23 +40,6 @@ class TrackModel(db.Model):
     duration_ms = db.Column('duration_ms', db.Float, nullable=False)
     popularity = db.Column('popularity', db.Integer, nullable=False)
     decade = db.Column('decade', db.String, nullable=False)
-    danceability_vec = db.Column('danceability_vec', db.Float, nullable=False)
-    energy_vec = db.Column('energy_vec', db.Float, nullable=False)
-    key_vec = db.Column('key_vec', db.Float, nullable=False)
-    loudness_vec = db.Column('loudness_vec', db.Float, nullable=False)
-    mode_vec = db.Column('mode_vec', db.Float, nullable=False)
-    speechiness_vec = db.Column('speechiness_vec', db.Float, nullable=False)
-    acousticness_vec = db.Column('acousticness_vec', db.Float, nullable=False)
-    instrumentalness_vec = db.Column('instrumentalness_vec', db.Float, nullable=False)
-    liveness_vec = db.Column('liveness_vec', db.Float, nullable=False)
-    valence_vec = db.Column('valence_vec', db.Float, nullable=False)
-    tempo_vec = db.Column('tempo_vec', db.Float, nullable=False)
-    duration_ms_vec = db.Column('duration_ms_vec', db.Float, nullable=False)
-    time_signature_vec = db.Column('time_signature_vec', db.Float, nullable=False)
-    chorus_hit_vec = db.Column('chorus_hit_vec', db.Float, nullable=False)
-    sections_vec = db.Column('sections_vec', db.Float, nullable=False)
-    popularity_vec = db.Column('popularity_vec', db.Float, nullable=False)
-    decade_vec = db.Column('decade_vec', db.Float, nullable=False)
 
 # Fields to use for serialization.
 track_fields = {
