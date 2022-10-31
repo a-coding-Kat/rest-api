@@ -103,9 +103,186 @@ All requirements are added to the **requirements.txt** file.
 
 # Rest API
 
-The rest API offers 2 endpoints for accessing individual tracks and a list of tracks (based on the selection criteria).
+The REST API offers 3 endpoints for accessing individual tracks and a list of tracks (based on the selection criteria).
+* **TrackList endpoint** `/api/tracks/`: Get a list of songs based on some criteria
+    - **GET** `/api/tracks/`: Return the requested list of Tracks
+    
+        This endpoints supports 5 URL parameters:
+        - page (default = 1) - which page of the paginated result you want to read.
+        - sort_field (default = 'id) - by which field to order the result.
+        - sort_order (default = 'asc') - in which direction ('asc' or 'desc') to order the results.
+        - filter_field (optional) - field on which to filter.
+        - filter_value (optional) - field value on which to filter.
+        
+        This endpoints always returns results paginated with page_size = 10. The **page** URL parameters defines which 
+        page would you like to receive back. If not specified otherwise, the sorting is always done in ascending order 
+        on the id field. The filtering is by default disabled, but if you specify the **filter_field** and 
+        **filter_value** your results will be filtered accordingly:
+        - If the filter_field is a string, the service supports exact matches as well as '%LIKE%' SQL style matches.
+        - If the filter_field is a number, we support only exact match.
+        
+        TODO: DESCRIBE THIS ENTIRE RETURN FORMAT.
+    
+        Example:
+        ```bash
+        # Retrieve the first page of songs whose artist contains the string "%Lana%", sorted by id in ascending order.
+        curl -s -X GET http://localhost:5000/api/tracks/?page=1&sort_field=id&sort_order=asc&filter_field=artist&filter_value=%Lana%
+        ```
+        Positive response (HTTP code 200):
+        ```json
+        {
+            "page": 1,
+            "has_next": true,
+            "has_prev": false,
+            "tracks_iter": [1,2,3,4,5,null,4109,4110],
+            "next_num": 2,
+            "items": [],
+            "prev_num": null
+        }
+        ```
 
-TODO: WRITE DOWN THE REST INTERFACE.
+* **Track endpoint** `/api/track/<int:track_id>`: CURD access to Track records in database.
+    - **GET** `/api/track/<int:track_id>` - retrieve single Track by id.
+
+        Get returns you the requested Track if successful and a message telling you what is wrong otherwise.
+    
+        Example:
+        ```bash
+        # Retrieve track with id=1
+        curl -s -X GET http://localhost:5000/api/track/1
+        ```
+        Positive response (HTTP code 200):
+        ```json
+        {
+            "id": 1,
+            "track": "Jealous Kind Of Fella",
+            "artist": "Garland Green",
+            "danceability": 0.417,
+            "key": 3,
+            "instrumentalness": 0.0,
+            "tempo": 185.655,
+            "duration_ms": 173533.0,
+            "popularity": 1,
+            "decade": "60s"
+        }
+        ```
+        Negative response (HTTP code 500):
+        ```json
+        {
+          "msg": "Cannot get track, track_id does not exist."
+        }
+        ```
+    - **PUT** `/api/track/<int:track_id>` - Create new Track record
+    
+        Creates a new Track. All fields are mandatory. Check the chapter **import\_data.py** below for more details
+        on the attributes and their types. You must specify all attributes in the database except **id**, because 
+        the database will assign it to the new Track.
+        
+        If successful you will get the newly created Track back, otherwise you will get a message telling you what is 
+        wrong.
+    
+        Example:
+        ```bash
+        # Create a new track. Note: you must pass 0 as the track_id in the URL when doing this request.
+        curl -s -X PUT http://localhost:5000/api/track/0 -H "Content-Type: application/json" -d '
+        {
+            "track": "Jealous Kind Of Fella",
+            "artist": "Garland Green",
+            "danceability": 0.417,
+            "key": 3,
+            "instrumentalness": 0.0,
+            "tempo": 185.655,
+            "duration_ms": 173533.0,
+            "popularity": 1,
+            "decade": "60s"
+        }'
+        ```
+        Positive response (HTTP code 201):
+        ```json
+        {
+            "id": 41100,
+            "track": "Jealous Kind Of Fella",
+            "artist": "Garland Green",
+            "danceability": 0.417,
+            "key": 3,
+            "instrumentalness": 0.0,
+            "tempo": 185.655,
+            "duration_ms": 173533.0,
+            "popularity": 1,
+            "decade": "60s"
+        }
+        ```
+        Negative response (HTTP code 500) (example if request was missing "decade" attribute):
+        ```json
+         {"message": { "decade": "Decade is required." }}
+        ```
+    - **PATCH** `/api/track/<int:track_id>` - Update existing track by id
+    
+        Updates an existing Track. All fields are mandatory. Check the chapter **import\_data.py** below for more details
+        on the attributes and their types.
+        
+        If successful you will get the newly updated Track back, otherwise you will get a message telling you what is 
+        wrong.
+    
+        Example:
+        ```bash
+        # Update track with id=1
+        curl -s -X PATCH http://localhost:5000/api/track/1 -H "Content-Type: application/json" -d '
+        {
+            "id": 1,
+            "track": "Jealous Kind Of Fella",
+            "artist": "Garland Green",
+            "danceability": 0.417,
+            "key": 3,
+            "instrumentalness": 0.0,
+            "tempo": 185.655,
+            "duration_ms": 173533.0,
+            "popularity": 1,
+            "decade": "60s"
+        }'
+        ```
+        Postive response (HTTP code 200):
+        ```json
+        {
+            "id": 1,
+            "track": "Jealous Kind Of Fella",
+            "artist": "Garland Green",
+            "danceability": 0.417,
+            "key": 3,
+            "instrumentalness": 0.0,
+            "tempo": 185.655,
+            "duration_ms": 173533.0,
+            "popularity": 1,
+            "decade": "60s"
+        }
+        ```
+        Negative response (HTTP code 500):
+        ```json
+        {
+          "msg": "Cannot update track, track_id does not exist."
+        }
+        ```
+    - **DELETE** `/api/track/<int:track_id>` - Delete existing track by id
+    
+        Delete the requested Track. If successful an empty JSON will be returned, otherwise a message telling you 
+        what is wrong.
+    
+        Example:
+        ```bash
+        # Delete track with id=1
+        curl -s -X DELETE http://localhost:5000/api/track/1
+        ```
+        Positive response (HTTP code 200):
+        ```json
+        {}
+        ```
+        Negative response (HTTP code 500):
+        ```json
+        {
+          "msg": "Cannot delete track, track_id = 1 does not exist."
+        }
+        ```
+        
 
 # Project architecture
 
