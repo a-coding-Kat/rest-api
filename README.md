@@ -56,7 +56,22 @@ python wdb_rest/server.py
 
 ## Running the tests
 
-The server comes with Unit tests you can run. From the root folder of this project:
+Before running the tests you must initialize the database by running import_data.py.
+The tests will modify the database. Rerun import_data.py before starting the server.
+
+### Unit tests
+
+From the root folder of this project:
+```bash
+python -m unittest test_data.py
+```
+
+### Integration tests
+
+Before running integration tests you must run the server. You can do this via docker or with the instructions above.
+Integration tests also modify the database, so afterwards re-run import_data.py.
+
+From the root folder of this project:
 ```bash
 python -m unittest test_api.py
 ```
