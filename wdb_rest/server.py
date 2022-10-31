@@ -93,7 +93,7 @@ class Recommender(Resource):
 
     def __init__(self):
         if app.config["recommendation_matrix"] is None:
-            app.config["recommendation_matrix"] = self.track_dao.set_recommendation_matrix(
+            app.config["recommendation_matrix"] = track_dao.set_recommendation_matrix(
                 app.config["recommendation_matrix_path"],
                 app.config["columns_to_be_vectorized"]
             )
@@ -102,7 +102,7 @@ class Recommender(Resource):
     def get(self, track_id):
 
         try:
-            how_many_recommendations = request.args.get('how_many_recommendations', 1, type=int)
+            how_many_recommendations = request.args.get('how_many_recommendations', 10, type=int)
             if how_many_recommendations > 100:
                 how_many_recommendations = 100
             if how_many_recommendations < 1:

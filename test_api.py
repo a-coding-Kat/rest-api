@@ -1,3 +1,5 @@
+import json
+from cmath import e
 import unittest
 from wdb_rest.client import TrackClient
 
@@ -18,6 +20,9 @@ class IntegrationTests(unittest.TestCase):
         }
 
         self.client = TrackClient()
+
+        #invalid track id
+        self.invalid_track_id = 99999999
 
     def test_create_track_success(self):
 
@@ -66,11 +71,8 @@ class IntegrationTests(unittest.TestCase):
         self.assertEqual(created_track, read_track)
 
     def test_get_track_fail(self):
-        # Track_id 9999999 does not exist.
-        invalid_track_id = 9999999
-
         # This method needs to throw an exception because the track_id is invalid.
-        response, return_code = self.client.get_track(invalid_track_id)
+        response, return_code = self.client.get_track(self.invalid_track_id)
 
         # Check if we got a 500 code.
         self.assertEqual(return_code, 500)
@@ -97,12 +99,10 @@ class IntegrationTests(unittest.TestCase):
         self.assertDictEqual(created_track, updated_track)
 
     def test_update_track_fail(self):
-        # Track_id 9999999 does not exist.
-        invalid_track_id = 9999999
 
         # Make copy of original dictionary.
         invalid_track = dict(self.track)
-        invalid_track['id'] = invalid_track_id
+        invalid_track['id'] = self.invalid_track_id
 
         # The update should throw an exception because the track_id does not exist.
         response, response_code = self.client.update_track(invalid_track)
@@ -140,14 +140,38 @@ class IntegrationTests(unittest.TestCase):
         self.assertEqual(response['msg'], 'Cannot get track, track_id does not exist.')
 
     def test_delete_track_fail(self):
-        # Track_id 9999999 does not exist.
-        invalid_track_id = 9999999
 
         # The delete should throw an exception because the track_id does not exist.
-        response, response_code = self.client.delete_track(invalid_track_id)
+        response, response_code = self.client.delete_track(self.invalid_track_id)
 
         # Check if we get an error
         self.assertEqual(response_code, 500)
-
+        self.client = TrackClient()
         # Check if we got the expected message
-        self.assertEqual(response['msg'], 'Cannot delete track, track_id = 9999999 does not exist.')
+        self.assertEqual(response['msg'], f'Cannot delete track, track_id = {self.invalid_track_id} does not exist.')
+
+    def test_get_recommendations_success(self):
+
+        response, status_code = self.client.recommend_tracks(42, 12)
+        self.assertEqual(list, type(response))
+
+        #check if length of recommendation matches request
+        self.assertEqual(12, len(response))
+        self.assertEqual(200, status_code)
+
+    def test_get_recommendations_fail(self):
+
+
+        # Check if an invalid track id returns correct error code
+        response, status_code = self.client.recommend_tracks(self.invalid_track_id, 1)
+        self.assertEqual(500, status_code)
+        self.assertEqual(response['msg'], 'Invalid track id or track not found.')
+
+    def test_get_all_tracks_sorting(self):
+
+        #check if sorting asc/desc yields different search results based on sort_field
+        tracks_asc, status_code = self.client.get_tracks(sort_order = "asc", sort_field = "tempo")
+        tracks_desc, status_code = self.client.get_tracks(sort_order = "desc", sort_field = "tempo")
+        first_item_asc = json.loads(tracks_asc["items"])[0]
+        first_item_desc = json.loads(tracks_desc["items"])[0]
+        self.assertGreater(first_item_desc["tempo"], first_item_asc["tempo"])
