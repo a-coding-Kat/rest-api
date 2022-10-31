@@ -6,7 +6,7 @@ import pandas as pd
 
 from sqlalchemy import literal_column
 
-from json_encoders import AlchemyEncoder, NumpyArrayEncoder
+from wdb_rest.json_encoders import AlchemyEncoder, NumpyArrayEncoder
 
 class TrackDAO:
     """

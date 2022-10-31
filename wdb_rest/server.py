@@ -6,7 +6,7 @@ from sqlalchemy.orm import load_only
 import os
 import requests
 
-from data import TrackDAO, DataHelpers
+from wdb_rest.data import TrackDAO, DataHelpers
 
 # Create the application.
 app = Flask(__name__)

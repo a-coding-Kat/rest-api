@@ -1,7 +1,7 @@
 import requests
 
 # If no URL is provided to the client, try to connect to local instance.
-default_url = 'http://127.0.0.1:5000/'
+default_url = 'http://127.0.0.1:5000/api/'
 
 
 class TrackClient:
@@ -18,7 +18,7 @@ class TrackClient:
 
         Example:
             from wdb_rest.client import TrackClient
-            client = TrackClient('http://127.0.0.1:5000/')
+            client = TrackClient('http://127.0.0.1:5000/api/')
 
         :param str url: URL of the REST server to connect to. Default value: http://127.0.0.1:5000/
         :return: TrackClient instance
