@@ -2,5 +2,6 @@ Flask
 Flask_RESTful
 Flask_SQLAlchemy
 pandas
+pytest
 requests
 scipy
