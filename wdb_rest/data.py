@@ -89,16 +89,19 @@ class TrackDAO:
         return package
 
     def get_track_recommendations(self, track_id, how_many_recommendations, recommendation_matrix):
-        """Returns recommendations for a track 
+        """Returns recommendations for a track
         
         :param track_id: id of the track to be recommended
-        :param how_many_recommendations: how many recommendations are returned in the payload
+        :param how_many_recommendations: how many recommendations are returned in the payload (max 100, min 1)
         :return: query of n recommendations 
         """
-        track_array = recommendation_matrix[track_id]
+
+        try:
+            track_array = recommendation_matrix[track_id]
+        except:
+            raise Exception("Invalid track id or track not found.")
         recommendation_indeces = self.get_sorted_recommendation_indeces(track_array, recommendation_matrix)
-        recommendations = self.track_model.query.filter(self.track_model.id.in_(recommendation_indeces[0][0:how_many_recommendations].tolist())).all()
-        return recommendations
+        return self.track_model.query.filter(self.track_model.id.in_(recommendation_indeces[0][0:how_many_recommendations].tolist())).all()
 
     def create_track(self, args):
         """
@@ -137,9 +140,7 @@ class TrackDAO:
         self.db.session.commit()
 
         # Load track from the database.
-        track = self.track_model.query.filter_by(id=track_id).first()
-
-        return track
+        return self.track_model.query.filter_by(id=track_id).first()
 
     def get_track_by_id(self, track_id):
         """
@@ -183,9 +184,7 @@ class TrackDAO:
         self.track_model.query.filter_by(id=track_id).update(args)
         self.db.session.commit()
 
-        track = self.track_model.query.filter_by(id=track_id).first()
-
-        return track
+        return self.track_model.query.filter_by(id=track_id).first()
 
     def delete_track_by_id(self, track_id):
         """

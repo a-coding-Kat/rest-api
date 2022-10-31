@@ -129,3 +129,19 @@ class TrackClient:
         """
         r = requests.delete(self.url + 'track/' + str(track_id))
         return r.json(), r.status_code
+
+    def recommend_track(self, track_id, how_many_recommendations):
+        """
+        Recommend me n tracks similar to my track based on id.
+
+        Example:
+            client.recommend_track(25, 10)
+
+        :param int track_id: id of the track to delete.
+        :param int how_many_recommendations: how many recommendations for the track
+        """
+
+        params = {'how_many_recommendations': how_many_recommendations}
+
+        r = requests.delete(self.url + 'recommendation/' + str(track_id), params)
+        return r.json(), r.status_code
