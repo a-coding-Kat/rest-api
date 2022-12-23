@@ -1,5 +1,7 @@
 # RESTful API, WDB Module Mini-Challenge
 
+[![Tests Status](https://github.com/a-coding-Kat/rest-api/actions/workflows/main.yaml/badge.svg)](https://github.com/a-coding-Kat/rest-api/actions/workflows/main.yaml)
+
 The goal of this repository is to implement a RESTful API that offers CRUD access to spotify tracks obtained from [Kaggle](https://www.kaggle.com/datasets/akiboy96/spotify-dataset?resource=download).
 It also allows for filtering and pagination of songs by any attribute in the database.
 
