@@ -4,7 +4,7 @@ FROM python:3.8-slim
 # Create directory for project.
 WORKDIR /app
 
-# Copy root folder to container /project folder.
+# Copy root folder to container /app folder.
 COPY . .
 
 # Add our code to the Python path.
