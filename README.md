@@ -125,13 +125,13 @@ The REST API offers 3 endpoints for accessing individual tracks and a list of tr
     
         This endpoints supports 5 URL parameters:
         - page (default = 1) - which page of the paginated result you want to read.
-        - sort_field (default = 'id) - by which field to order the result.
+        - sort_field (default = 'id') - by which field to order the result.
         - sort_order (default = 'asc') - in which direction ('asc' or 'desc') to order the results.
         - filter_field (optional) - field on which to filter.
         - filter_value (optional) - field value on which to filter.
         
-        This endpoints always returns results paginated with page_size = 10. The **page** URL parameters defines which 
-        page would you like to receive back. If not specified otherwise, the sorting is always done in ascending order 
+        This endpoints always return results paginated with page_size = 10. The **page** URL parameters define which 
+        page you would like to receive back. If not specified otherwise, the sorting is always done in ascending order 
         on the id field. The filtering is by default disabled, but if you specify the **filter_field** and 
         **filter_value** your results will be filtered accordingly:
         - If the filter_field is a string, the service supports exact matches as well as '%LIKE%' SQL style matches.
